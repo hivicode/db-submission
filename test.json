@@ -1,0 +1,167 @@
+db.createCollection("mahasiswa", {
+  validator: {
+    $and: [
+      {
+        $jsonSchema: {
+          bsonType: "object",
+          required: [
+            "nim", "nama", "umur", "email", "jurusan", "tahun_masuk", "status", "nomor_telepon"
+          ],
+          properties: {
+            nim: {
+              bsonType: "string",
+              description: "harus string dan wajib diisi"
+            },
+            nama: {
+              bsonType: "string",
+              minLength: 3,
+              description: "minimal 3 karakter"
+            },
+            umur: {
+              bsonType: "int",
+              minimum: 17,
+              maximum: 30,
+              description: "minimal 17 maksimal 30"
+            },
+            email: {
+              bsonType: "string",
+              pattern: "^[\\w-\\.]+@([\\w-]+\\.)+[\\w-]{2,4}$",
+              description: "harus format email valid"
+            },
+            jurusan: {
+              enum: ["Informatika", "Sistem Informasi", "Teknik Komputer"],
+              description: "hanya boleh salah satu dari daftar"
+            },
+            tahun_masuk: {
+              bsonType: "int",
+              minimum: 2020,
+              maximum: 2025,
+              description: "minimal 2020 maksimal 2025"
+            },
+            status: {
+              enum: ["aktif", "cuti", "lulus"],
+              description: "hanya boleh berisi aktif, cuti, atau lulus"
+            },
+            nomor_telepon: {
+              bsonType: "string",
+              pattern: "^[0-9]{11,}$",
+              description: "minimal 11 digit angka"
+            }
+          }
+        }
+      },
+      {
+        $expr: {
+          $or: [
+            { $lte: ["$tahun_masuk", 2023] },
+            { $eq: ["$status", "aktif"] }
+          ]
+        }
+      }
+    ]
+  },
+  validationLevel: "strict"
+})
+
+// 3 data valid
+db.mahasiswa.insertMany([
+  {
+    nim: "1124102166",
+    nama: "Bintang Fathir",
+    umur: 21,
+    email: "bintang.fathir@mail.stikom.ac.id",
+    jurusan: "Informatika",
+    tahun_masuk: 2024
+  },
+  {
+    nim: "1124102167",
+    nama: "Khodijah Qonita",
+    umur: 22,
+    email: "khodijah.qonita@mail.stikom.ac.id",
+    jurusan: "Sistem Informasi",
+    tahun_masuk: 2022
+  },
+  {
+    nim: "1124102168",
+    nama: "Lukmanul Hakim",
+    umur: 19,
+    email: "lukmanul.hakim@mail.stikom.ac.id",
+    jurusan: "Teknik Komputer",
+    tahun_masuk: 2023
+  }
+])
+
+// 2 data tidak valid (akan gagal)
+// Nama kurang dari 3 karakter
+db.mahasiswa.insertOne({
+  nim: "1124102169",
+  nama: "Ma",
+  umur: 18,
+  email: "li@mail.com",
+  jurusan: "Informatika",
+  tahun_masuk: 2021
+})
+
+// Email tidak valid
+db.mahasiswa.insertOne({
+  nim: "1124102170",
+  nama: "M. Rizki",
+  umur: 21,
+  email: "m.rizki@mail.stikom.ac.id",
+  jurusan: "Sistem Informasi",
+  tahun_masuk: 2022
+})
+
+
+db.runCommand({
+    collMod: "mahasiswa",
+    validator: {
+      $jsonSchema: {
+        bsonType: "object",
+        required: [
+          "nim", "nama", "umur", "email", "jurusan", "tahun_masuk", "status", "nomor_telepon"
+        ],
+        properties: {
+          nim: {
+            bsonType: "string",
+            description: "harus string dan wajib diisi"
+          },
+          nama: {
+            bsonType: "string",
+            minLength: 3,
+            description: "minimal 3 karakter"
+          },
+          umur: {
+            bsonType: "int",
+            minimum: 17,
+            maximum: 30,
+            description: "minimal 17 maksimal 30"
+          },
+          email: {
+            bsonType: "string",
+            pattern: "^[\\w-\\.]+@([\\w-]+\\.)+[\\w-]{2,4}$",
+            description: "harus format email valid"
+          },
+          jurusan: {
+            enum: ["Informatika", "Sistem Informasi", "Teknik Komputer"],
+            description: "hanya boleh salah satu dari daftar"
+          },
+          tahun_masuk: {
+            bsonType: "int",
+            minimum: 2020,
+            maximum: 2025,
+            description: "minimal 2020 maksimal 2025"
+          },
+          status: {
+            enum: ["aktif", "cuti", "lulus"],
+            description: "hanya boleh berisi aktif, cuti, atau lulus"
+          },
+          nomor_telepon: {
+            bsonType: "string",
+            pattern: "^[0-9]{11,}$",
+            description: "minimal 11 digit angka"
+          }
+        }
+      }
+    },
+})
